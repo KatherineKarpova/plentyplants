@@ -3,10 +3,6 @@ import * as dotenv from 'dotenv';
 
 // Load environment variables
 dotenv.config();
-export const BASE_URL =
-  process.env.NODE_ENV === 'development'
-    ? 'http://10.0.2.2:3000' // Use for local development (Android emulator)
-    : 'https://api.plentyplants.com'; // Replace with your production backend URL
 
 const sequelize = new Sequelize({
   dialect: 'mysql',
@@ -16,5 +12,14 @@ const sequelize = new Sequelize({
   database: process.env.DB_NAME,
   logging: false, // Optional: Disable logging
 });
+
+export const testDatabaseConnection = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('Database connection established successfully.');
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+  }
+};
 
 export default sequelize;
