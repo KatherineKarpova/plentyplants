@@ -1,10 +1,13 @@
 import { Model, DataTypes } from 'sequelize';
-import sequelize from './sequelize'; // import Sequelize instance here
+import sequelize from './sequelize';
 
 class User extends Model {
   public id!: number;
-  public emailHash!: string;
-  public passwordHash!: string;
+  public email!: string;
+  public name!: string;
+  public password_hash!: string;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 }
 
 User.init(
@@ -14,20 +17,28 @@ User.init(
       primaryKey: true,
       autoIncrement: true,
     },
-    emailHash: {
+    email: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true, // ensure that email hashes are unique
+      unique: true,
+      validate: {
+        isEmail: true,
+      },
     },
-    passwordHash: {
+    name: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    password_hash: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      comment: 'Hashed password using bcrypt or argon2',
     },
   },
   {
-    sequelize, // sequelize instance
+    sequelize,
     modelName: 'User',
-    tableName: 'users', // name of the table
+    tableName: 'users',
     timestamps: true,
   }
 );
