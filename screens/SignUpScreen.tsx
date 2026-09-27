@@ -1,150 +1,81 @@
-// src/screens/SignUpScreen.tsx
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from 'react-native';
-import { useForm, Controller } from 'react-hook-form';
-import SignUpStyles from '../styles/SignUpStyles'; // Import the styles
+import React from 'react';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../navigation/AppNavigator';
 
-interface SignUpFormData {
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
+type SignUpScreenProps = {
+  navigation: StackNavigationProp<RootStackParamList, 'SignUp'>;
+};
 
-const SignUpScreen: React.FC = () => {
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<SignUpFormData>();
-
-  const [loading, setLoading] = useState(false);
-
-  const onSubmit = (data: SignUpFormData) => {
-    if (data.password !== data.confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
-    }
-
-    setLoading(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-      Alert.alert('Success', 'User signed up successfully');
-    }, 2000);
-
-    console.log('Form Data:', data);
-  };
-
+const SignUpScreen = ({ navigation }: SignUpScreenProps) => {
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={SignUpStyles.container} // Use styles from the imported file
-    >
-      <ScrollView contentContainerStyle={SignUpStyles.scrollContainer}>
-        <Text style={SignUpStyles.title}>Sign Up</Text>
+    <View style={styles.container}>
+      <Text style={styles.kicker}>Join the rainbow</Text>
+      <Text style={styles.title}>Create your gut-health profile</Text>
+      <TextInput placeholder="Name" style={styles.input} />
+      <TextInput placeholder="Email" style={styles.input} autoCapitalize="none" keyboardType="email-address" />
+      <TextInput placeholder="Password" secureTextEntry style={styles.input} />
 
-        {/* Email Input */}
-        <View style={SignUpStyles.inputContainer}>
-          <Text style={SignUpStyles.label}>Email</Text>
-          <Controller
-            control={control}
-            name="email"
-            rules={{
-              required: 'Email is required',
-              pattern: {
-                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: 'Enter a valid email address',
-              },
-            }}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                style={[SignUpStyles.input, errors.email ? SignUpStyles.errorBorder : null]}
-                placeholder="Enter your email"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            )}
-          />
-          {errors.email && <Text style={SignUpStyles.errorText}>{errors.email.message}</Text>}
-        </View>
+      <Pressable style={styles.primaryButton} onPress={() => navigation.navigate('Home')}>
+        <Text style={styles.primaryText}>Create account</Text>
+      </Pressable>
 
-        {/* Password Input */}
-        <View style={SignUpStyles.inputContainer}>
-          <Text style={SignUpStyles.label}>Password</Text>
-          <Controller
-            control={control}
-            name="password"
-            rules={{ required: 'Password is required', minLength: 6 }}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                style={[SignUpStyles.input, errors.password ? SignUpStyles.errorBorder : null]}
-                placeholder="Enter your password"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                secureTextEntry
-              />
-            )}
-          />
-          {errors.password && (
-            <Text style={SignUpStyles.errorText}>
-              {errors.password.type === 'minLength'
-                ? 'Password must be at least 6 characters'
-                : errors.password.message}
-            </Text>
-          )}
-        </View>
-
-        {/* Confirm Password Input */}
-        <View style={SignUpStyles.inputContainer}>
-          <Text style={SignUpStyles.label}>Confirm Password</Text>
-          <Controller
-            control={control}
-            name="confirmPassword"
-            rules={{ required: 'Confirm Password is required' }}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                style={[
-                  SignUpStyles.input,
-                  errors.confirmPassword ? SignUpStyles.errorBorder : null,
-                ]}
-                placeholder="Confirm your password"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                secureTextEntry
-              />
-            )}
-          />
-          {errors.confirmPassword && (
-            <Text style={SignUpStyles.errorText}>{errors.confirmPassword.message}</Text>
-          )}
-        </View>
-
-        {/* Submit Button */}
-        <TouchableOpacity
-          style={[SignUpStyles.button, loading ? SignUpStyles.buttonDisabled : null]}
-          onPress={handleSubmit(onSubmit)}
-          disabled={loading}
-        >
-          <Text style={SignUpStyles.buttonText}>{loading ? 'Signing Up...' : 'Sign Up'}</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      <Pressable onPress={() => navigation.navigate('Login')}>
+        <Text style={styles.secondaryText}>Already have an account?</Text>
+      </Pressable>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f7f0ff',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  kicker: {
+    color: '#845ef7',
+    fontWeight: '800',
+    letterSpacing: 2,
+    marginBottom: 12,
+    textTransform: 'uppercase',
+  },
+  title: {
+    color: '#2a1d1c',
+    fontSize: 31,
+    fontWeight: '900',
+    marginBottom: 20,
+  },
+  input: {
+    backgroundColor: '#fff',
+    borderColor: '#d8c3ff',
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 14,
+    fontSize: 16,
+  },
+  primaryButton: {
+    backgroundColor: '#845ef7',
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  primaryText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  secondaryText: {
+    color: '#2d6a4f',
+    textAlign: 'center',
+    fontWeight: '700',
+    fontSize: 15,
+  },
+});
 
 export default SignUpScreen;

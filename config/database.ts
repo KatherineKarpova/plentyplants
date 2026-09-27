@@ -1,17 +1,22 @@
-import { Sequelize } from 'sequelize';
+import { Sequelize, Options } from 'sequelize';
 import * as dotenv from 'dotenv';
 
-// Load environment variables
 dotenv.config();
 
-const sequelize = new Sequelize({
-  dialect: 'mysql',
-  host: process.env.DB_HOST,
-  username: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  logging: false, // Optional: Disable logging
-});
+export const databaseConfig: Options = {
+  dialect: 'postgres',
+  host: process.env.DB_HOST || 'localhost',
+  port: Number(process.env.DB_PORT || 5432),
+  username: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'postgres',
+  database: process.env.DB_NAME || 'plentyplants',
+  logging: false,
+  dialectOptions: {
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  },
+};
+
+const sequelize = new Sequelize(databaseConfig);
 
 export const testDatabaseConnection = async () => {
   try {

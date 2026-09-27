@@ -1,17 +1,26 @@
 import React from 'react';
-import { useAuth } from '../hooks/useAuth';
 import { NavigationContainer } from '@react-navigation/native';
-import AuthStack from './AuthStack';
-import MainStack from './MainStack';
+import { createStackNavigator } from '@react-navigation/stack';
+import LoginScreen from '../screens/LoginScreen';
+import SignUpScreen from '../screens/SignUpScreen';
+import HomeScreen from '../screens/HomeScreen';
+
+export type RootStackParamList = {
+  Login: undefined;
+  SignUp: undefined;
+  Home: undefined;
+};
+
+const Stack = createStackNavigator<RootStackParamList>();
 
 const AppNavigator = () => {
-  const { user, loading } = useAuth();
-
-  if (loading) return null; // Show a loading screen if necessary
-
   return (
     <NavigationContainer>
-      {user ? <MainStack /> : <AuthStack />}
+      <Stack.Navigator initialRouteName="Home" screenOptions={{headerShown: false}}>
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="SignUp" component={SignUpScreen} />
+        <Stack.Screen name="Home" component={HomeScreen} />
+      </Stack.Navigator>
     </NavigationContainer>
   );
 };

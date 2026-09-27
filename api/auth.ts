@@ -1,47 +1,97 @@
+import { BASE_URL } from '../config/baseURL';
 import { setToken, getToken, removeToken } from '../services/secureStorage';
 
-import { config } from 'dotenv';
-config();
+export type AuthResponse = {
+  token?: string;
+  user?: {
+    id: number;
+    email: string;
+    name: string;
+  };
+  message?: string;
+};
 
-const BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000'; // fallback to localhost if env variable is not set
+const buildAuthHeaders = async (extraHeaders: Record<string, string> = {}) => {
+  const token = await getToken();
 
+  return {
+    'Content-Type': 'application/json',
+    ...extraHeaders,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+};
 
-export const login = async (email: string, password: string): Promise<boolean> => {
-  const response = await fetch(`${BASE_URL}/login`, {
+export const signUp = async (
+  payload: { email: string; password: string; name: string }
+): Promise<AuthResponse> => {
+  const response = await fetch(`${BASE_URL}/api/auth/register`, {
+    method: 'POST',
+    headers: await buildAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  const data: AuthResponse = await response.json();
+
+  if (response.ok && data.token) {
+    await setToken(data.token);
+  }
+
+  return data;
+};
+
+export const login = async (
+  email: string,
+  password: string
+): Promise<{ success: boolean; data?: AuthResponse; message?: string }> => {
+  const response = await fetch(`${BASE_URL}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
 
-  if (response.ok) {
-    const { token } = await response.json();
-    await setToken(token); // save token securely
-    return true;
-  } else {
-    return false;
+  const data: AuthResponse = await response.json();
+
+  if (response.ok && data.token) {
+    await setToken(data.token);
+    return { success: true, data };
   }
+
+  return {
+    success: false,
+    message: data.message || 'Unable to sign in.',
+  };
 };
 
-export const checkUserSession = async (): Promise<any | null> => {
+export const checkUserSession = async (): Promise<AuthResponse['user'] | null> => {
   const token = await getToken();
-  if (token) {
-    const response = await fetch(`${BASE_URL}/validate-token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
 
-    if (response.ok) {
-      return response.json(); // return user data
-    } else {
-      await removeToken(); // invalid token
-    }
+  if (!token) {
+    return null;
   }
-  return null;
+
+  const response = await fetch(`${BASE_URL}/api/auth/me`, {
+    method: 'GET',
+    headers: await buildAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    await removeToken();
+    return null;
+  }
+
+  const data: AuthResponse = await response.json();
+  return data.user || null;
 };
 
 export const logout = async () => {
-  await removeToken(); // Clear token
+  await removeToken();
+};
+
+export const authFetch = async (url: string, init: RequestInit = {}) => {
+  const headers = await buildAuthHeaders(init.headers as Record<string, string>);
+
+  return fetch(url, {
+    ...init,
+    headers,
+  });
 };
